@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div style="margin: 10px;">
+        <div>
+            <label for="text_input">Enter Text</label>
+        </div>
+        <div>
+            <textarea style="padding: 10px; width: 90%;" name="text_input" id="text_input" rows="20"></textarea>
+        </div>
+        <div>
+            <button onclick="sendText()">SEND TEXT</button>
+            <div>
+                <input type="file" id="input_file" accept="text/plain" onchange="changeFile()">
+                <button onclick="sendFile()">SEND FILE</button>
+            </div>
+        </div>
+
+        <div>
+            <p style="width: 90%; background:rgb(0, 0, 0); padding: 10px; color:#fff" id="resume"></p>
+        </div>
+    </div>
+
+
+    <script>
+        const baseURL = "http://localhost:5000"
+
+        function sendText() {
+            let text = document.getElementById('text_input').value
+            
+            fetch(baseURL + '?' + new URLSearchParams({ text }))
+                .then(response => response.json())
+                .then(res => resume.textContent = res)
+        }
+
+        let data
+        function changeFile() {
+            let abortController = new AbortController();
+
+            const input_file = document.getElementById('input_file')
+            const file = input_file.files[0]
+            let resume = document.getElementById('resume')
+            data = new FormData()
+            data.append('file', file)
+            console.log('res')
+            window.onbeforeunload = function(e) { abortController.abort(); };
+            fetch(baseURL + '/file', {
+                method: "POST",
+                body: data
+            })
+            
+            
+        }
+
+
+    //    async function sendFile() {
+
+
+
+    //        const response = await fetch(baseURL + '/file', {
+    //             method: "POST",
+    //             body: data
+    //         })
+    //         const res = await response.json()
+    //         console.log(res)
+
+
+    //     }
+
+
+
+        // fetch('http://localhost:5000/', 
+        // {
+        //     method: 'POST',
+        //     body : JSON.stringify(body)
+        // })
+        // .then(response => console.log(response))
+
+    </script>
+</body>
+
+</html>
