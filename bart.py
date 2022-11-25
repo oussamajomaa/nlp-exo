@@ -20,23 +20,31 @@ Effective metrics for evaluating generated feedback are essential since we use t
 All existing evaluation methods for natural language generation tasks can be grouped into three categories: 1) content-overlap metrics, 2) model-based metrics, and 3) human-centered evaluation metrics. Content-overlap metrics and model-based metrics automatically evaluate a text-generation system by measuring the similarity between generated texts and reference texts provided by domain experts. Human-centered evaluation asks people to assess the quality of system-generated texts against set task-specific criteria [9].
 It is worth noting that the ultimate goal of our Insta-Reviewer automated feedback system is to generate feedback that is valuable to students instead of generating the exact same feedback as provided by instructors. For this reason, human-authored evaluation should be viewed as the gold standard when evaluating generated feedback. However, human evaluations are inconsistent and subjective, which can lead to erroneous conclusions or prevent researchers from comparing results across systems [9]. Thus, we also employ a content-overlap metric and a model-based metric to validate our human-evaluation results. In the following paragraphs, we survey potential metrics that can be applied to our task.
 """
+
+
 model_name = "facebook/bart-large-cnn"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 tokenizer = BartTokenizer.from_pretrained(model_name)
-model = BartForConditionalGeneration.from_pretrained(model_name)
+model = BartForConditionalGeneration.from_pretrained(model_name).to(device)
+
+max_length = int(len(article.split(' '))*10/100)
+print(max_length, len(article.split(' ')),round(max_length/2))
 
 input_tokens = tokenizer.batch_encode_plus(
     [article],
     return_tensors='pt',
     max_length=1024,
-    truncation=True)['input_ids']
+    truncation=True)['input_ids'].to(device)
     
 encoded_ids = model.generate(
     input_tokens,
     num_beams=4,
     length_penalty=2.0,
-    max_length=150,
-    min_length=50,
+    max_length=max_length,
+    min_length=round(max_length/2),
     no_repeat_ngram_size=3
 )
 summary = tokenizer.decode(encoded_ids.squeeze(), skip_special_tokens=True)
 print(summary)
+
+# min_length must be 56 and max_length must be greater than min_length

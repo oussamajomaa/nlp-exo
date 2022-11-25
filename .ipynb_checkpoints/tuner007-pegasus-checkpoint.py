@@ -1,12 +1,9 @@
-from transformers import AutoTokenizer, AutoModelWithLMHead
 import torch
-
-model_name = "t5-large"
+from transformers import PegasusForConditionalGeneration, PegasusTokenizer
+model_name = 'tuner007/pegasus_summarizer'
 device = "cuda" if torch.cuda.is_available() else "cpu"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelWithLMHead.from_pretrained(model_name).to(device)
-
-
+tokenizer = PegasusTokenizer.from_pretrained(model_name)
+model = PegasusForConditionalGeneration.from_pretrained(model_name).to(device)
 body = '''
 The Chrysler Building, the famous art deco New York skyscraper, will be sold for a small fraction of its previous sales price.
 The deal, first reported by The Real Deal, was for $150 million, according to a source familiar with the deal.
@@ -32,20 +29,12 @@ Walter Chrysler had set out to build the tallest building in the world, a compet
 Once the competitor could rise no higher, the spire of the Chrysler building was raised into view, giving it the title.
 '''
 
-input_tokens = tokenizer(
-    [body],
-    return_tensors='pt',
-    max_length=1024,
-    truncation=True)['input_ids'].to(device)
-
-
-encoded_ids = model.generate(
-    input_tokens,
-    num_beams=4,
-    length_penalty=2.0,
-    max_length=150,
-    min_length=50,
-    no_repeat_ngram_size=3
-)
-summary = tokenizer.decode(encoded_ids.squeeze(), skip_special_tokens=True)
+input_tokens = tokenizer([body],truncation=True,padding='longest', return_tensors="pt")
+# encoded_ids = model.generate(**input_tokens,max_length=128,num_beams=5, num_return_sequences=1, temperature=1.5)
+encoded_ids = model.generate(**input_tokens)
+summary = tokenizer.batch_decode(encoded_ids, skip_special_tokens=True)
+# summary = tokenizer.batch_decode(encoded_ids, skip_special_tokens=True)
+summary = summary[0]
 print(summary)
+
+

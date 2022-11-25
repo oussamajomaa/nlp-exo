@@ -1,11 +1,8 @@
 from transformers import AutoTokenizer, AutoModelWithLMHead
-import torch
 
 model_name = "t5-large"
-device = "cuda" if torch.cuda.is_available() else "cpu"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelWithLMHead.from_pretrained(model_name).to(device)
-
+model = AutoModelWithLMHead.from_pretrained(model_name)
 
 body = '''
 The Chrysler Building, the famous art deco New York skyscraper, will be sold for a small fraction of its previous sales price.
@@ -36,8 +33,7 @@ input_tokens = tokenizer(
     [body],
     return_tensors='pt',
     max_length=1024,
-    truncation=True)['input_ids'].to(device)
-
+    truncation=True)['input_ids']
 
 encoded_ids = model.generate(
     input_tokens,
